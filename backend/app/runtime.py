@@ -13,6 +13,13 @@ from app.detection import PresenceDetector
 from app.models import CalibrationMode
 from app.signal import estimate_heartbeat_bpm, high_pass, moving_average
 
+# Minimum samples used when computing the recent presence window.
+PRESENCE_DETECTION_MIN_WINDOW_SAMPLES = 20
+# Time span (in seconds) of recent filtered data considered for presence scoring.
+PRESENCE_DETECTION_WINDOW_SECONDS = 3
+# Relative contribution of short-term motion energy in the blended presence metric.
+PRESENCE_DETECTION_MOTION_WEIGHT = 0.6
+
 
 @dataclass
 class RuntimeSnapshot:
@@ -182,13 +189,23 @@ class WiFiRuntime:
             self._filtered.append(filtered_value)
             self._filtered_preview.append(filtered_value)
 
-            recent_window = np.array(list(self._filtered)[-max(10, self.config.sample_rate_hz * 2) :], dtype=float)
+            recent_window = np.array(
+                list(self._filtered)[
+                    -max(
+                        PRESENCE_DETECTION_MIN_WINDOW_SAMPLES,
+                        self.config.sample_rate_hz * PRESENCE_DETECTION_WINDOW_SECONDS,
+                    ) :
+                ],
+                dtype=float,
+            )
             variance = float(np.var(recent_window)) if recent_window.size else 0.0
-            presence = self._detector.update(variance)
+            motion = float(np.mean(np.abs(np.diff(recent_window)))) if recent_window.size > 1 else 0.0
+            blended_presence_metric = variance + (PRESENCE_DETECTION_MOTION_WEIGHT * motion)
+            presence = self._detector.update(blended_presence_metric)
             self._presence_confidence = presence.confidence
 
             if self._calibration_mode:
-                self._calibration_variances.append(variance)
+                self._calibration_variances.append(blended_presence_metric)
 
             heartbeat_bpm, heartbeat_quality = estimate_heartbeat_bpm(
                 np.array(self._filtered, dtype=float),
@@ -226,7 +243,7 @@ class WiFiRuntime:
                     {
                         "detected": presence.occupied,
                         "confidence": presence.confidence,
-                        "variance": variance,
+                        "variance": blended_presence_metric,
                         "threshold": self._detector.threshold,
                     },
                 )

@@ -3,6 +3,8 @@ import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
 const WS_URL = API_BASE.replace('http', 'ws') + '/ws/stream'
+const RADAR_MARKER_MIN_TOP_PERCENT = 20
+const RADAR_MARKER_TOP_RANGE_PERCENT = 48
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v))
@@ -31,6 +33,40 @@ function WaveChart({ points, color, title }) {
       <svg viewBox="0 0 700 180" className="wave-svg">
         <polyline points={polyline} stroke={color} fill="none" strokeWidth="2.5" />
       </svg>
+    </div>
+  )
+}
+
+function RadarPanel({ detected, confidence }) {
+  const markerTop =
+    RADAR_MARKER_MIN_TOP_PERCENT + (1 - clamp(confidence, 0, 1)) * RADAR_MARKER_TOP_RANGE_PERCENT
+
+  return (
+    <div className={`panel radar-panel ${detected ? 'pulse' : ''}`}>
+      <div className="panel-title">Wi‑Fi Radar</div>
+      <div className="radar-stage">
+        <div className="radar-scan" />
+        <div className="radar-rings">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <div className="wifi-emitter">📶</div>
+        <div className="wifi-waves-3d">
+          <span />
+          <span />
+          <span />
+        </div>
+
+        {detected && (
+          <div className="person-marker" style={{ top: `${markerTop}%` }}>
+            🧍
+          </div>
+        )}
+      </div>
+      <small>Radar lock: {detected ? 'PERSON TRACKED' : 'SCANNING...'}</small>
     </div>
   )
 }
@@ -144,6 +180,7 @@ function App() {
       <section className="charts-grid">
         <WaveChart points={raw} color="#00f7ff" title="Raw Wi-Fi Waves" />
         <WaveChart points={filtered} color="#ff4be2" title="Filtered Waves" />
+        <RadarPanel detected={status.presence_detected} confidence={status.presence_confidence} />
       </section>
 
       <section className="panel controls">

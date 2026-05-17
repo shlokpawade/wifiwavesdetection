@@ -93,6 +93,116 @@ header p {
   background: rgba(0, 0, 0, 0.35);
 }
 
+.radar-panel small {
+  display: block;
+  margin-top: 0.75rem;
+  color: #b6c5f0;
+}
+
+.radar-stage {
+  position: relative;
+  height: 260px;
+  border-radius: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 75%, rgba(0, 247, 255, 0.2), rgba(0, 0, 0, 0) 45%),
+    radial-gradient(circle at 50% 50%, rgba(8, 20, 38, 0.95), rgba(5, 9, 16, 0.98));
+  border: 1px solid rgba(111, 173, 255, 0.35);
+}
+
+.radar-rings {
+  position: absolute;
+  inset: 8% 12%;
+  display: grid;
+  place-items: center;
+}
+
+.radar-rings span {
+  position: absolute;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  border: 1px solid rgba(0, 247, 255, 0.28);
+}
+
+.radar-rings span:nth-child(1) { --size: 32%; }
+.radar-rings span:nth-child(2) { --size: 52%; }
+.radar-rings span:nth-child(3) { --size: 72%; }
+.radar-rings span:nth-child(4) { --size: 92%; }
+
+.radar-scan {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 140%;
+  height: 140%;
+  transform-origin: 0% 0%;
+  background: conic-gradient(from 0deg, rgba(0, 255, 149, 0.35), rgba(0, 255, 149, 0));
+  animation: sweep 2.6s linear infinite;
+  opacity: 0.45;
+}
+
+.wifi-emitter {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.4rem;
+  z-index: 3;
+}
+
+.wifi-waves-3d {
+  position: absolute;
+  left: 50%;
+  bottom: 30px;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  perspective: 500px;
+}
+
+.wifi-waves-3d span {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid rgba(0, 247, 255, 0.7);
+  transform: translate(-50%, 50%) rotateX(65deg);
+  animation: wave-expand 2.1s infinite ease-out;
+}
+
+.wifi-waves-3d span:nth-child(2) { animation-delay: 0.65s; }
+.wifi-waves-3d span:nth-child(3) { animation-delay: 1.3s; }
+
+.person-marker {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.6rem;
+  filter: drop-shadow(0 0 6px rgba(0, 255, 149, 0.75));
+  z-index: 4;
+}
+
+@keyframes sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes wave-expand {
+  0% {
+    opacity: 0.7;
+    width: 18px;
+    height: 18px;
+  }
+  100% {
+    opacity: 0;
+    width: 190px;
+    height: 62px;
+  }
+}
+
 .controls {
   margin-top: 1rem;
 }
