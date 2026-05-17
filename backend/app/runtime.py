@@ -182,13 +182,15 @@ class WiFiRuntime:
             self._filtered.append(filtered_value)
             self._filtered_preview.append(filtered_value)
 
-            recent_window = np.array(list(self._filtered)[-max(10, self.config.sample_rate_hz * 2) :], dtype=float)
+            recent_window = np.array(list(self._filtered)[-max(20, self.config.sample_rate_hz * 3) :], dtype=float)
             variance = float(np.var(recent_window)) if recent_window.size else 0.0
-            presence = self._detector.update(variance)
+            motion = float(np.mean(np.abs(np.diff(recent_window)))) if recent_window.size > 1 else 0.0
+            presence_metric = variance + (0.6 * motion)
+            presence = self._detector.update(presence_metric)
             self._presence_confidence = presence.confidence
 
             if self._calibration_mode:
-                self._calibration_variances.append(variance)
+                self._calibration_variances.append(presence_metric)
 
             heartbeat_bpm, heartbeat_quality = estimate_heartbeat_bpm(
                 np.array(self._filtered, dtype=float),
@@ -226,7 +228,7 @@ class WiFiRuntime:
                     {
                         "detected": presence.occupied,
                         "confidence": presence.confidence,
-                        "variance": variance,
+                        "variance": presence_metric,
                         "threshold": self._detector.threshold,
                     },
                 )

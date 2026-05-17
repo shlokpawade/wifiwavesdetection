@@ -35,6 +35,39 @@ function WaveChart({ points, color, title }) {
   )
 }
 
+function RadarPanel({ detected, confidence }) {
+  const markerTop = 20 + (1 - clamp(confidence, 0, 1)) * 48
+
+  return (
+    <div className={`panel radar-panel ${detected ? 'pulse' : ''}`}>
+      <div className="panel-title">Wi‑Fi Radar</div>
+      <div className="radar-stage">
+        <div className="radar-scan" />
+        <div className="radar-rings">
+          <span />
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <div className="wifi-emitter">📶</div>
+        <div className="wifi-waves-3d">
+          <span />
+          <span />
+          <span />
+        </div>
+
+        {detected && (
+          <div className="person-marker" style={{ top: `${markerTop}%` }}>
+            🧍
+          </div>
+        )}
+      </div>
+      <small>Radar lock: {detected ? 'PERSON TRACKED' : 'SCANNING...'}</small>
+    </div>
+  )
+}
+
 function App() {
   const [status, setStatus] = useState({
     connected: false,
@@ -144,6 +177,7 @@ function App() {
       <section className="charts-grid">
         <WaveChart points={raw} color="#00f7ff" title="Raw Wi-Fi Waves" />
         <WaveChart points={filtered} color="#ff4be2" title="Filtered Waves" />
+        <RadarPanel detected={status.presence_detected} confidence={status.presence_confidence} />
       </section>
 
       <section className="panel controls">
