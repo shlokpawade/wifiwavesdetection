@@ -3,6 +3,8 @@ import './App.css'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? 'http://localhost:8000'
 const WS_URL = API_BASE.replace('http', 'ws') + '/ws/stream'
+const RADAR_MARKER_MIN_TOP_PERCENT = 20
+const RADAR_MARKER_TOP_RANGE_PERCENT = 48
 
 function clamp(v, min, max) {
   return Math.max(min, Math.min(max, v))
@@ -36,7 +38,8 @@ function WaveChart({ points, color, title }) {
 }
 
 function RadarPanel({ detected, confidence }) {
-  const markerTop = 20 + (1 - clamp(confidence, 0, 1)) * 48
+  const markerTop =
+    RADAR_MARKER_MIN_TOP_PERCENT + (1 - clamp(confidence, 0, 1)) * RADAR_MARKER_TOP_RANGE_PERCENT
 
   return (
     <div className={`panel radar-panel ${detected ? 'pulse' : ''}`}>

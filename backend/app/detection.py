@@ -1,5 +1,10 @@
 from dataclasses import dataclass
 
+MIN_EXIT_THRESHOLD_MULTIPLIER = 0.1
+MIN_EMA_SMOOTHING_ALPHA = 0.05
+MIN_THRESHOLD_EPSILON = 1e-9
+MIN_CONFIDENCE = 0.05
+
 
 @dataclass
 class PresenceUpdate:
@@ -17,11 +22,11 @@ class PresenceDetector:
         exit_multiplier: float = 0.85,
         ema_alpha: float = 0.2,
     ) -> None:
-        self.threshold = max(1e-9, threshold)
+        self.threshold = max(MIN_THRESHOLD_EPSILON, threshold)
         self.debounce_samples = max(1, debounce_samples)
         self.enter_multiplier = max(1.0, enter_multiplier)
-        self.exit_multiplier = min(1.0, max(0.1, exit_multiplier))
-        self.ema_alpha = min(1.0, max(0.05, ema_alpha))
+        self.exit_multiplier = min(1.0, max(MIN_EXIT_THRESHOLD_MULTIPLIER, exit_multiplier))
+        self.ema_alpha = min(1.0, max(MIN_EMA_SMOOTHING_ALPHA, ema_alpha))
         self._occupied = False
         self._hits = 0
         self._misses = 0
@@ -67,8 +72,15 @@ class PresenceDetector:
                 self._hits = 0
 
         if self._occupied:
-            confidence = min(1.0, smoothed_variance / max(1e-9, enter_threshold))
+            confidence = min(1.0, smoothed_variance / max(MIN_THRESHOLD_EPSILON, enter_threshold))
         else:
-            confidence = min(1.0, max(0.05, 1.0 - (smoothed_variance / max(1e-9, exit_threshold))))
+            normalized_exit_distance = smoothed_variance / max(MIN_THRESHOLD_EPSILON, exit_threshold)
+            confidence = min(
+                1.0,
+                max(
+                    MIN_CONFIDENCE,
+                    1.0 - normalized_exit_distance,
+                ),
+            )
 
         return PresenceUpdate(occupied=self._occupied, confidence=confidence, changed=changed)
