@@ -17,7 +17,7 @@ This implementation ships with a **simulator source** (`source=simulator`) so th
 ## Backend setup
 
 ```bash
-cd /home/runner/work/wifiwavesdetection/wifiwavesdetection/backend
+cd backend
 python -m venv .venv
 source .venv/bin/activate
 pip install -e '.[dev]'
@@ -46,7 +46,7 @@ uvicorn app.main:app --reload --port 8000
 ## Frontend setup
 
 ```bash
-cd /home/runner/work/wifiwavesdetection/wifiwavesdetection/frontend
+cd frontend
 npm install
 npm run dev
 ```
@@ -69,14 +69,14 @@ VITE_API_BASE=http://localhost:8000
 Backend:
 
 ```bash
-cd /home/runner/work/wifiwavesdetection/wifiwavesdetection/backend
+cd backend
 python -m pytest
 ```
 
 Frontend:
 
 ```bash
-cd /home/runner/work/wifiwavesdetection/wifiwavesdetection/frontend
+cd frontend
 npm run build
 ```
 
